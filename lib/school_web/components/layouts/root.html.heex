@@ -71,6 +71,17 @@
           }, { once: true});
       });
 
+      window.addEventListener("phx:police-flash", (e) => {
+        const packageCard = document.querySelector('.package-card');
+
+        packageCard.classList.add('police-flash-anim');
+
+        packageCard.addEventListener('animationend', () => {
+          packageCard.classList.remove('police-flash-anim');
+          packageCard.classList.add('card-hidden');
+        }, { once: true });
+      });
+
       window.addEventListener("phx:reset-package-card", (e) => {
       const packageCard = document.querySelector('.package-card');
 

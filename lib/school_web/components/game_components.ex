@@ -3,6 +3,7 @@ defmodule SchoolWeb.GameComponents do
 
   attr :player_name, :string, required: true
   attr :score, :integer, required: true
+  attr :contraband_score, :integer, default: 0
 
   def score_banner(assigns) do
     ~H"""
@@ -14,10 +15,17 @@ defmodule SchoolWeb.GameComponents do
           <div class="player-role">Senior Postal Officer</div>
         </div>
       </div>
-      <div class="score-display">
-        <span class="score-label">Score</span>
-        <span class="score-value">{@score}</span>
-        <span class="score-unit">pts</span>
+      <div class="score-group">
+        <div class="score-display">
+          <span class="score-label">Score</span>
+          <span class="score-value">{@score}</span>
+          <span class="score-unit">pts</span>
+        </div>
+        <div class="score-display score-display-contraband">
+          <span class="score-label">Contraband</span>
+          <span class="score-value">{@contraband_score}</span>
+          <span class="score-unit">pts</span>
+        </div>
       </div>
     </div>
     """
@@ -55,6 +63,20 @@ defmodule SchoolWeb.GameComponents do
             <div class="stamp-mark rejected">
               <span class="stamp-label">Rejected</span>
               <span class="stamp-points">−1</span>
+            </div>
+          </div>
+        <% :caught -> %>
+          <div class="stamp-result" id={"card-#{@timestamp}"}>
+            <div class="stamp-mark caught">
+              <span class="stamp-label">Contraband Seized</span>
+              <span class="stamp-points">+2</span>
+            </div>
+          </div>
+        <% :false_positive -> %>
+          <div class="stamp-result" id={"card-#{@timestamp}"}>
+            <div class="stamp-mark false-positive">
+              <span class="stamp-label">False Report</span>
+              <span class="stamp-points">−2</span>
             </div>
           </div>
         <% nil -> %>
@@ -95,6 +117,18 @@ defmodule SchoolWeb.GameComponents do
             <div class="field-label">Declared Value</div>
             <div class="field-value">{@package.declared_value}</div>
           </div>
+          <div class="field">
+            <div class="field-label">Origin Country</div>
+            <div class="field-value">{@package.origin_country}</div>
+          </div>
+          <div class="field">
+            <div class="field-label">Condition</div>
+            <div class="field-value">
+              <span class={"badge badge-condition badge-condition-#{@package.condition}"}>
+                {capitalise(@package.condition)}
+              </span>
+            </div>
+          </div>
         </div>
 
         <div class="package-checks">
@@ -115,6 +149,12 @@ defmodule SchoolWeb.GameComponents do
           </button>
           <button phx-click="approve" class="btn btn-approve">
             <span class="btn-icon">✓</span> Approve
+          </button>
+        </div>
+
+        <div class="card-actions-secondary">
+          <button phx-click="report_police" class="btn btn-report-police">
+            <span class="btn-icon">🚨</span> Report to Police
           </button>
         </div>
       </div>
@@ -187,6 +227,31 @@ defmodule SchoolWeb.GameComponents do
     """
   end
 
+  @unwritten_hints [
+    "Packages from countries with a known smuggling history deserve extra scrutiny — they aren't automatically guilty, but verify everything else twice.",
+    "Heavy damage or deterioration can mean rough handling, or it can mean someone forced the package open and resealed it.",
+    "A customs form that's present isn't necessarily a customs form that's real — forged stamps and mismatched formats happen.",
+    "None of these are rules you can cite. They're judgment calls. Trust the regulations first, your gut second."
+  ]
+
+  def unwritten_hints(assigns) do
+    assigns = assign(assigns, :hints, @unwritten_hints)
+
+    ~H"""
+    <details class="hints-reference">
+      <summary class="hints-header">
+        <span class="hints-title">⚠ Field Notes (Unofficial)</span>
+      </summary>
+
+      <div class="hints-list">
+        <div :for={{hint, index} <- Enum.with_index(@hints)} class="hint-item">
+          <span class="hint-number">{index + 1}</span><span>{hint}</span>
+        </div>
+      </div>
+    </details>
+    """
+  end
+
   attr :player_list, :list, required: true
 
   def leaderboard(assigns) do
@@ -203,6 +268,9 @@ defmodule SchoolWeb.GameComponents do
             <div class="lb-player-name">{player.name}</div>
           </div>
           <div class="lb-player-score">{player.score}</div>
+          <div class="lb-player-score lb-player-score-contraband">
+            🚨 {Map.get(player, :contraband_score, 0)}
+          </div>
         </li>
       </ul>
     </div>
@@ -220,13 +288,34 @@ defmodule SchoolWeb.GameComponents do
         <ul class="match-end-scores">
           <li :for={{player, index} <- Enum.with_index(@player_list)}>
             <span>{get_medal(index)} {player.name}</span>
-            <span class="final-score">{player.score} pts</span>
+            <span class="final-score">
+              {final_score(player)} pts
+              <span class="final-score-breakdown">
+                ({player.score} insp. {format_signed(Map.get(player, :contraband_score, 0))} contr.{missed_contraband_note(
+                  player
+                )})
+              </span>
+            </span>
           </li>
         </ul>
         <button class="btn-new-match">New Match</button>
       </div>
     </div>
     """
+  end
+
+  defp final_score(player) do
+    player.score + Map.get(player, :contraband_score, 0) - Map.get(player, :missed_contraband, 0)
+  end
+
+  defp format_signed(n) when n >= 0, do: "+#{n}"
+  defp format_signed(n), do: "#{n}"
+
+  defp missed_contraband_note(player) do
+    case Map.get(player, :missed_contraband, 0) do
+      0 -> ""
+      missed -> " −#{missed} missed"
+    end
   end
 
   def capitalise(term) do

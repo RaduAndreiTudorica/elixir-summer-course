@@ -25,6 +25,7 @@ defmodule SchoolWeb.MainLive do
       |> assign(:active_rules, active_rules)
       |> assign(:rule_descriptions, rule_descriptions)
       |> assign(:score, 0)
+      |> assign(:contraband_score, 0)
       |> assign(:player_list, [])
 
     {:ok, new_socket}

@@ -226,10 +226,14 @@
 
     .player-name { font-weight: 600; font-size: 14px; color: var(--ink); }
     .player-role { font-size: 10px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 500; }
+    .score-group { display: flex; align-items: center; gap: 4px; }
     .score-display { display: flex; align-items: baseline; gap: 5px; }
     .score-label { font-size: 10px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 500; }
     .score-value { font-family: 'DM Mono', monospace; font-size: 28px; font-weight: 500; color: var(--ink); line-height: 1; }
     .score-unit { font-size: 12px; color: var(--ink-muted); font-weight: 500; }
+
+    .score-display-contraband { padding-left: 20px; border-left: 1px solid var(--paper-line); margin-left: 4px; }
+    .score-display-contraband .score-value { color: var(--stamp-blue); }
 
     /* -- Card Timer -- */
 
@@ -327,6 +331,11 @@
     .badge-parcel { background: #eef2f7; color: var(--stamp-blue); border: 1px solid #c8d6e5; }
     .badge-letter { background: #f0f0f0; color: #666; border: 1px solid #ddd; }
 
+    .badge-condition-pristine { background: var(--success-bg); color: #1e8449; border: 1px solid #a9dfbf; }
+    .badge-condition-worn { background: #f0f0f0; color: #666; border: 1px solid #ddd; }
+    .badge-condition-damaged { background: #fef3e0; color: #e67e22; border: 1px solid #f0d9a8; }
+    .badge-condition-severely_damaged { background: var(--danger-bg); color: #922b21; border: 1px solid #f5b7b1; }
+
     .package-checks {
       padding: 12px 22px;
       background: rgba(245, 230, 200, 0.2);
@@ -342,9 +351,22 @@
     .check-tag.missing .check-dot { background: var(--stamp-red); }
 
     .card-actions {
-      padding: 14px 22px 18px;
+      padding: 14px 22px 0;
       display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
     }
+
+    .card-actions-secondary {
+      padding: 10px 22px 18px;
+    }
+
+    .btn-report-police {
+      width: 100%;
+      background: white;
+      border-style: dashed;
+      border-color: var(--stamp-blue);
+      color: var(--stamp-blue);
+    }
+    .btn-report-police:hover { background: var(--stamp-blue); border-style: solid; color: white; }
 
     .btn {
       font-family: 'Instrument Sans', sans-serif; font-size: 14px; font-weight: 700;
@@ -412,6 +434,48 @@
       color: var(--ink-muted); flex-shrink: 0;
     }
 
+    /* ===== UNWRITTEN HINTS (FIELD NOTES) ===== */
+
+    .hints-reference {
+      margin-top: 12px;
+      background: var(--paper-white);
+      border: 1px dashed var(--stamp-blue);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+
+    .hints-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--paper-line);
+      background: rgba(44, 111, 187, 0.06);
+      cursor: pointer;
+      list-style: none;
+    }
+
+    .hints-header::-webkit-details-marker { display: none; }
+
+    .hints-title {
+      font-family: 'Special Elite', cursive; font-size: 13px;
+      color: var(--stamp-blue); text-transform: uppercase; letter-spacing: 1.5px;
+    }
+
+    .hints-list { padding: 4px 16px; }
+
+    .hint-item {
+      padding: 8px 0; font-size: 11px; color: var(--ink-soft);
+      line-height: 1.45;
+      border-bottom: 1px solid rgba(224, 213, 192, 0.25);
+      display: flex; gap: 8px; align-items: baseline;
+    }
+
+    .hint-item:last-child { border-bottom: none; }
+
+    .hint-number {
+      font-family: 'DM Mono', monospace; font-size: 9px;
+      color: var(--stamp-blue); flex-shrink: 0;
+    }
+
     /* ===== COLUMN 3: LEADERBOARD ===== */
 
     .leaderboard {
@@ -464,6 +528,8 @@
     }
 
     .lb-player-name .you-tag { font-size: 9px; color: var(--stamp-blue); font-weight: 500; margin-left: 3px; }
+
+    .lb-player-score-contraband { font-size: 11px; color: var(--stamp-blue); font-weight: 600; margin-left: 6px; }
     .lb-activity { display: flex; gap: 2px; margin-top: 3px; }
     .lb-activity-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--paper-line); }
     .lb-activity-dot.active { background: var(--stamp-green); }
@@ -524,7 +590,8 @@
     .match-end-scores { list-style: none; text-align: left; margin-bottom: 32px; }
     .match-end-scores li { padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; font-size: 14px; border-bottom: 1px solid var(--paper-line); }
     .match-end-scores li:first-child { background: rgba(212, 160, 18, 0.08); font-weight: 700; }
-    .final-score { font-family: 'DM Mono', monospace; font-weight: 600; }
+    .final-score { font-family: 'DM Mono', monospace; font-weight: 600; text-align: right; }
+    .final-score-breakdown { display: block; font-size: 10px; font-weight: 400; color: var(--ink-muted); margin-top: 2px; }
     .btn-new-match { font-family: 'Instrument Sans', sans-serif; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 14px 32px; border-radius: var(--radius); border: none; background: var(--ink); color: var(--manila); cursor: pointer; }
 
     /* Animation Class */
@@ -536,6 +603,19 @@
 .swipe-left-anim {
   animation: swipeLeft 0.6s cubic-bezier(0.45, 0.05, 0.55, 0.95) backwards;
   pointer-events: none; /* Prevents clicking while animating */
+}
+
+.police-flash-anim {
+  animation: policeFlash 0.6s ease-in-out forwards;
+  pointer-events: none;
+}
+
+@keyframes policeFlash {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(192, 57, 43, 0); }
+  25% { box-shadow: 0 0 0 4px rgba(192, 57, 43, 0.7); }
+  50% { box-shadow: 0 0 0 4px rgba(44, 111, 187, 0.7); }
+  75% { box-shadow: 0 0 0 4px rgba(192, 57, 43, 0.7); }
+  100% { opacity: 0; transform: scale(0.97); }
 }
 
 @keyframes swipeRight {
@@ -618,6 +698,20 @@
 }
 
 .stamp-mark.rejected {
+  position: absolute;
+  top: 100px;
+  border-color: var(--stamp-red);
+  color: var(--stamp-red);
+}
+
+.stamp-mark.caught {
+  position: absolute;
+  top: 100px;
+  border-color: var(--stamp-blue);
+  color: var(--stamp-blue);
+}
+
+.stamp-mark.false-positive {
   position: absolute;
   top: 100px;
   border-color: var(--stamp-red);
