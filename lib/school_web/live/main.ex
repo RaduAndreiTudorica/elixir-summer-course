@@ -27,7 +27,6 @@ defmodule SchoolWeb.MainLive do
       |> assign(:score, 0)
       |> assign(:contraband_score, 0)
       |> assign(:player_list, [])
-      |> assign(:contraband_score, 0)
 
     {:ok, new_socket}
   end
@@ -71,7 +70,7 @@ defmodule SchoolWeb.MainLive do
 
   @impl true
   def handle_event("report_police", _params, socket) do
-    package = socket.package
+    package = socket.assigns.package
     {updated_player, decision} = State.report_police(self(), package)
 
     new_socket =
@@ -80,8 +79,12 @@ defmodule SchoolWeb.MainLive do
       |> assign(:local_player, updated_player)
       |> assign(:contraband_score, updated_player.contraband_score)
 
-    push_event(new_socket, "police-flash", %{})
+    new_socket =
+      new_socket
+      |> push_event("police-flash", %{})
+
     Process.send_after(self(), :next_package, 1_000)
+
     {:noreply, new_socket}
   end
 
@@ -117,11 +120,12 @@ defmodule SchoolWeb.MainLive do
 
   @impl true
   def handle_info({:tick_update, current_game_time}, socket) do
+    remaining = State.max_game_time() - current_game_time
     width = build_game_time_loading_bar(current_game_time)
 
     new_socket =
       socket
-      |> push_event("timer-tick", %{time: current_game_time, width: width})
+      |> push_event("timer-tick", %{time: remaining, width: width})
 
     {:noreply, new_socket}
   end

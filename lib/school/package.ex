@@ -8,8 +8,8 @@ defmodule School.Package do
           has_customs_form: boolean(),
           has_insurance: boolean(),
           has_fragile_sticker: boolean(),
-          origin_country: string(),
-          condition: :pristine | :worn | :damaged | :severely_damage,
+          origin_country: String.t(),
+          condition: :pristine | :worn | :damaged | :severely_damaged,
           contraband_type: :none | :drugs | :weapons | :organs,
           customs_form_forged: boolean()
         }
@@ -28,7 +28,7 @@ defmodule School.Package do
             customs_form_forged: false
 
   def contains_contraband?(package) do
-    case package.contaband_type do
+    case package.contraband_type do
       :none -> false
       _ -> true
     end

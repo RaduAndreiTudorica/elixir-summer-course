@@ -13,12 +13,12 @@ defmodule School.Logic do
     rule9: "Standard shipping is only available for domestic packages under 2000g.",
     rule10: "Fragile international packages over 1000g must use priority."
   }
-  @suspect_countries {
+  @suspect_countries [
     "Colombia",
     "Mexico",
     "North Korea"
-  }
-  @normal_countries {
+  ]
+  @normal_countries [
     "Germany",
     "France",
     "Romania",
@@ -27,7 +27,8 @@ defmodule School.Logic do
     "Italy",
     "Spain",
     "United Kingdom"
-  }
+  ]
+  @spec generate_package() :: School.Package.t()
   def generate_package do
     type = Enum.random([:letter, :parcel, :fragile])
     weight = calculate_weight(type)
@@ -37,13 +38,19 @@ defmodule School.Logic do
     has_fragile_sticker = Enum.random([true, false])
     has_customs_form = Enum.random([true, false])
     has_insurance = Enum.random([true, false])
-    customs_form_forged = :rand.uniform() < 0.85
 
     weighted_contraband_type =
       List.duplicate(:none, 17) ++
         List.duplicate(:drugs, 1) ++ List.duplicate(:organs, 1) ++ List.duplicate(:weapons, 1)
 
     contraband_type = Enum.random(weighted_contraband_type)
+
+    customs_form_forged =
+      if contraband_type == :none do
+        :rand.uniform() < 0.05
+      else
+        :rand.uniform() < 0.45
+      end
 
     condition =
       if contraband_type == :none do
@@ -57,7 +64,7 @@ defmodule School.Logic do
         weighted_condition_illegal =
           List.duplicate(:pristine, 3) ++
             List.duplicate(:worn, 5) ++
-            List.duplicate(:damaged, 7) ++ List.duplicate(:severely_damage, 5)
+            List.duplicate(:damaged, 7) ++ List.duplicate(:severely_damaged, 5)
 
         Enum.random(weighted_condition_illegal)
       end

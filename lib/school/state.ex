@@ -3,6 +3,7 @@ defmodule School.State do
 
   alias School.Player
   alias School.Logic
+  alias School.Package
 
   @max_active_rules 5
   @available_rules [
@@ -32,6 +33,10 @@ defmodule School.State do
     {:ok, state}
   end
 
+  def report_police(pid, package) do
+    GenServer.call(__MODULE__, {:report_police, pid, package})
+  end
+
   def add_player(name, pid) do
     GenServer.call(__MODULE__, {:add_player, name, pid})
   end
@@ -50,6 +55,35 @@ defmodule School.State do
 
   def update_player_score(pid, package, expected) do
     GenServer.call(__MODULE__, {:update_player_score, pid, package, expected})
+  end
+
+  @impl true
+  def handle_call({:report_police, pid, package}, _from, state) do
+    {[player], remaining_players} =
+      Enum.split_with(state.players, fn player -> player.pid == pid end)
+
+    is_contraband = School.Package.contains_contraband?(package)
+
+    delta = if is_contraband, do: 2, else: -2
+
+    new_contraband_score = player.contraband_score + delta
+
+    updated_player =
+      player
+      |> Map.put(:contraband_score, new_contraband_score)
+
+    updated_player_list = [updated_player | remaining_players]
+    new_state = Map.put(state, :players, updated_player_list)
+
+    decision = if is_contraband, do: :caught, else: :false_positive
+
+    Phoenix.PubSub.broadcast(
+      School.PubSub,
+      "game_room",
+      {:update_player_list, sort_by_score(updated_player_list)}
+    )
+
+    {:reply, {updated_player, decision}, new_state}
   end
 
   @impl true
@@ -100,7 +134,10 @@ defmodule School.State do
 
     new_score = max(player.score + score_delta, 0)
 
-    updated_player = Map.put(player, :score, new_score)
+    updated_player =
+      player
+      |> Map.put(:score, new_score)
+      |> track_missed_contraband(package)
 
     updated_player_list = [updated_player | remaining_players]
 
@@ -244,6 +281,14 @@ defmodule School.State do
       :in_progress
     else
       :waiting
+    end
+  end
+
+  defp track_missed_contraband(player, package) do
+    if Package.contains_contraband?(package) do
+      Map.update!(player, :missed_contraband, &(&1 + 1))
+    else
+      player
     end
   end
 end

@@ -38,7 +38,15 @@
   <body>
     <.flash_group flash={@flash} />
     {@inner_content}
+    <div id="police-siren-overlay" class="police-siren-overlay"></div>
+    <audio id="police-siren-audio" src={~p"/audio/police-siren.mp3"} preload="auto"></audio>
     <script>
+      function playPoliceSiren() {
+        const audio = document.getElementById('police-siren-audio');
+        audio.currentTime = 0;
+        audio.play().catch(() => {});
+      }
+
       window.addEventListener("phx:swipe-left", (e) => {
         const approveBtn = document.querySelector('.btn-approve');
         const declineBtn = document.querySelector('.btn-decline');
@@ -73,12 +81,24 @@
 
       window.addEventListener("phx:police-flash", (e) => {
         const packageCard = document.querySelector('.package-card');
+        const siren = document.getElementById('police-siren-overlay');
+
+        playPoliceSiren();
 
         packageCard.classList.add('police-flash-anim');
 
         packageCard.addEventListener('animationend', () => {
           packageCard.classList.remove('police-flash-anim');
           packageCard.classList.add('card-hidden');
+        }, { once: true });
+
+        siren.classList.remove('siren-active');
+        // restart animation even if triggered again before it finished
+        void siren.offsetWidth;
+        siren.classList.add('siren-active');
+
+        siren.addEventListener('animationend', () => {
+          siren.classList.remove('siren-active');
         }, { once: true });
       });
 

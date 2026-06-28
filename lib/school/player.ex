@@ -14,5 +14,4 @@ defmodule School.Player do
             ready?: false,
             contraband_score: 0,
             missed_contraband: 0
-
 end
