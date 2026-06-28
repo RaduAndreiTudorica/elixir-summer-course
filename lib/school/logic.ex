@@ -13,7 +13,21 @@ defmodule School.Logic do
     rule9: "Standard shipping is only available for domestic packages under 2000g.",
     rule10: "Fragile international packages over 1000g must use priority."
   }
-
+  @suspect_countries {
+    "Colombia",
+    "Mexico",
+    "North Korea"
+  }
+  @normal_countries {
+    "Germany",
+    "France",
+    "Romania",
+    "Austria",
+    "Belgium",
+    "Italy",
+    "Spain",
+    "United Kingdom"
+  }
   def generate_package do
     type = Enum.random([:letter, :parcel, :fragile])
     weight = calculate_weight(type)
@@ -23,6 +37,41 @@ defmodule School.Logic do
     has_fragile_sticker = Enum.random([true, false])
     has_customs_form = Enum.random([true, false])
     has_insurance = Enum.random([true, false])
+    customs_form_forged = :rand.uniform() < 0.85
+
+    weighted_contraband_type =
+      List.duplicate(:none, 17) ++
+        List.duplicate(:drugs, 1) ++ List.duplicate(:organs, 1) ++ List.duplicate(:weapons, 1)
+
+    contraband_type = Enum.random(weighted_contraband_type)
+
+    condition =
+      if contraband_type == :none do
+        weighted_condition_legal =
+          List.duplicate(:pristine, 10) ++
+            List.duplicate(:worn, 7) ++
+            List.duplicate(:damaged, 2) ++ List.duplicate(:severely_damaged, 1)
+
+        Enum.random(weighted_condition_legal)
+      else
+        weighted_condition_illegal =
+          List.duplicate(:pristine, 3) ++
+            List.duplicate(:worn, 5) ++
+            List.duplicate(:damaged, 7) ++ List.duplicate(:severely_damage, 5)
+
+        Enum.random(weighted_condition_illegal)
+      end
+
+    origin_country =
+      if contraband_type == :none do
+        Enum.random(@suspect_countries ++ @normal_countries)
+      else
+        if Enum.random(1..100) <= 50 do
+          Enum.random(@suspect_countries)
+        else
+          Enum.random(@normal_countries)
+        end
+      end
 
     %Package{
       type: type,
@@ -32,7 +81,11 @@ defmodule School.Logic do
       declared_value: declared_value,
       has_fragile_sticker: has_fragile_sticker,
       has_customs_form: has_customs_form,
-      has_insurance: has_insurance
+      has_insurance: has_insurance,
+      condition: condition,
+      origin_country: origin_country,
+      contraband_type: contraband_type,
+      customs_form_forged: customs_form_forged
     }
   end
 

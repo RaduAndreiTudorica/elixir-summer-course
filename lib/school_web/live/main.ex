@@ -27,6 +27,7 @@ defmodule SchoolWeb.MainLive do
       |> assign(:score, 0)
       |> assign(:contraband_score, 0)
       |> assign(:player_list, [])
+      |> assign(:contraband_score, 0)
 
     {:ok, new_socket}
   end
@@ -65,6 +66,22 @@ defmodule SchoolWeb.MainLive do
   def handle_event("approve", _params, socket) do
     new_socket = validation("swipe-right", :valid, socket)
 
+    {:noreply, new_socket}
+  end
+
+  @impl true
+  def handle_event("report_police", _params, socket) do
+    package = socket.package
+    {updated_player, decision} = State.report_police(self(), package)
+
+    new_socket =
+      socket
+      |> assign(:validation_result, decision)
+      |> assign(:local_player, updated_player)
+      |> assign(:contraband_score, updated_player.contraband_score)
+
+    push_event(new_socket, "police-flash", %{})
+    Process.send_after(self(), :next_package, 1_000)
     {:noreply, new_socket}
   end
 

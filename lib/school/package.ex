@@ -10,7 +10,7 @@ defmodule School.Package do
           has_fragile_sticker: boolean(),
           origin_country: string(),
           condition: :pristine | :worn | :damaged | :severely_damage,
-          contaband_type: :none | :drugs | :weapons | :organs,
+          contraband_type: :none | :drugs | :weapons | :organs,
           customs_form_forged: boolean()
         }
 
@@ -24,9 +24,8 @@ defmodule School.Package do
             has_fragile_sticker: true,
             origin_country: "Romania",
             condition: :pristine,
-            contaband_type: :none,
+            contraband_type: :none,
             customs_form_forged: false
-
 
   def contains_contraband?(package) do
     case package.contaband_type do
