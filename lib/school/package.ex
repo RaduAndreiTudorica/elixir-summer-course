@@ -7,7 +7,11 @@ defmodule School.Package do
           declared_value: float(),
           has_customs_form: boolean(),
           has_insurance: boolean(),
-          has_fragile_sticker: boolean()
+          has_fragile_sticker: boolean(),
+          origin_country: string(),
+          condition: :pristine | :worn | :damaged | :severely_damage,
+          contaband_type: :none | :drugs | :weapons | :organs,
+          customs_form_forged: boolean()
         }
 
   defstruct type: :letter,
@@ -17,5 +21,17 @@ defmodule School.Package do
             declared_value: 100,
             has_customs_form: true,
             has_insurance: true,
-            has_fragile_sticker: true
+            has_fragile_sticker: true,
+            origin_country: "Romania",
+            condition: :pristine,
+            contaband_type: :none,
+            customs_form_forged: false
+
+
+  def contains_contraband?(package) do
+    case package.contaband_type do
+      :none -> false
+      _ -> true
+    end
+  end
 end

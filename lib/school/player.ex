@@ -3,11 +3,16 @@ defmodule School.Player do
           name: String.t(),
           score: integer(),
           pid: pid(),
-          ready?: boolean()
+          ready?: boolean(),
+          contraband_score: integer(),
+          missed_contraband: integer()
         }
 
   defstruct name: nil,
             score: 0,
             pid: nil,
-            ready?: false
+            ready?: false,
+            contraband_score: 0,
+            missed_contraband: 0
+
 end
